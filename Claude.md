@@ -105,23 +105,7 @@ After modifying the application, verify:
 
 Do not claim a feature has been tested unless it has actually been verified.
 
-## AI-Assisted Development
 
-Claude Code is used to assist with coding, debugging, reviewing changes, and improving the application.
-
-AI-generated changes should be reviewed before being committed to GitHub.
-
-The purpose of AI assistance is to make development more efficient while maintaining an understanding of how the application works.
-
-## Remaining Work
-
-- Collect feedback from an intended user.
-- Make improvements based on the feedback received.
-- Document the feedback and any resulting changes.
-- Complete the project handoff.
-- Update the development log with final progress.
-- Finalize the Artifact 4 portfolio reflection.
-- Submit the portfolio link through Canvas.
 
 ## Project Status
 
