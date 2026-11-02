@@ -1,1 +1,566 @@
-:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:#e9edf6;background:#0c1220;font-synthesis:none}*{box-sizing:border-box}body{margin:0}.shell{max-width:1120px;margin:auto;padding:54px 24px}header,.panel-head,.modal-head{display:flex;align-items:center;justify-content:space-between;gap:20px}h1{font-size:clamp(2rem,5vw,3.1rem);letter-spacing:-.05em;margin:8px 0}h2{margin:0;font-size:1.2rem}p{color:#98a5ba;line-height:1.6;margin:6px 0}.eyebrow{color:#8aa7ff;font-weight:750;letter-spacing:.16em;font-size:.72rem}button,input,select,textarea{font:inherit}button{cursor:pointer}.primary{background:#7b9cff;color:#091326;border:0;border-radius:11px;padding:13px 19px;font-weight:750}.primary:hover{background:#a0b6ff}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:38px 0}.stats article,.panel{background:#151e30;border:1px solid #29364e;border-radius:16px}.stats article{padding:24px}.stats span{display:block;color:#a7b3c8;font-size:.88rem}.stats strong{display:block;font-size:2.1rem;margin-top:12px}.panel{padding:25px}.filters{display:flex;gap:10px}input,select,textarea{background:#0d1627;border:1px solid #35445f;border-radius:9px;color:#f0f3fc;padding:11px;min-width:0}input:focus,select:focus,textarea:focus{outline:2px solid #7b9cff;outline-offset:1px}.list{margin-top:24px}.item{border-top:1px solid #29364e;padding:19px 2px;display:flex;justify-content:space-between;gap:20px;align-items:center}.item h3{margin:0 0 5px;font-size:1.02rem}.item p{font-size:.87rem}.item a{color:#9fb8ff}.right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.pill{border-radius:50px;padding:6px 11px;background:#26364e;color:#c4d4f2;font-size:.78rem}.pill.Offered{background:#173c32;color:#9ee7c6}.pill.Rejected{background:#472a34;color:#ffb4be}.pill.Interviewing{background:#43351e;color:#f7d78c}.secondary,.danger{border:1px solid #465573;background:transparent;color:#dbe5f7;border-radius:8px;padding:8px 11px}.danger{color:#ffb4be}.empty{text-align:center;padding:60px 12px;color:#9daec8}footer{color:#8292ad;font-size:.82rem;margin-top:24px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}.text-button,.import-label{border:0;background:none;color:#a7bdff;cursor:pointer;padding:0}dialog{background:#172237;color:#eef3fc;border:1px solid #3a4b68;border-radius:17px;width:min(94vw,520px);padding:25px}dialog::backdrop{background:#020611c9}form{display:grid;gap:16px}form label{display:grid;gap:7px;font-size:.87rem;color:#c2cee0}form input,form select,form textarea{width:100%}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.icon-btn{background:none;border:0;color:#d8e3f5;font-size:1.7rem}.full{width:100%}.deadline{color:#f5cc83!important}@media(max-width:740px){.shell{padding:30px 15px}header,.panel-head{align-items:stretch;flex-direction:column}.stats{grid-template-columns:repeat(2,1fr)}.filters{flex-direction:column}.item{align-items:flex-start;flex-direction:column}.panel{padding:17px}.two{grid-template-columns:1fr}}
+
+/* =========================================
+   Internship Application Tracker
+   TCSS 490 - Artifact 4
+   ========================================= */
+
+:root {
+    --background: #0d1322;
+    --surface: #172136;
+    --surface-hover: #1d2a43;
+    --input-background: #0e1728;
+    --border: #2b3851;
+    --text: #edf2ff;
+    --muted: #9baac5;
+    --primary: #7c9cff;
+    --primary-hover: #97afff;
+    --success: #39c995;
+    --warning: #f5bb64;
+    --danger: #f47d8b;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--background);
+    color: var(--text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.shell {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+    padding: 48px 24px;
+}
+
+/* Header */
+
+header,
+.panel-head,
+.modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+header {
+    margin-bottom: 34px;
+}
+
+.eyebrow {
+    margin: 0 0 8px;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+h1 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 750;
+    letter-spacing: -1.3px;
+}
+
+h2,
+h3,
+p {
+    margin-top: 0;
+}
+
+header p,
+.subtitle {
+    color: var(--muted);
+}
+
+header p {
+    margin: 6px 0 0;
+    font-size: 14px;
+}
+
+/* Buttons */
+
+.primary,
+#addBtn,
+#saveBtn {
+    background: var(--primary);
+    color: #0a1327;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    padding: 12px 18px;
+    font-weight: 700;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.primary:hover,
+#addBtn:hover,
+#saveBtn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+/* Dashboard statistics */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 26px;
+}
+
+.stat,
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    min-height: 118px;
+}
+
+.stat small,
+.stat-card small,
+.stat-label {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.stat strong,
+.stat-card strong,
+.stat-value {
+    display: block;
+    font-size: 30px;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+/* Applications panel */
+
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 24px;
+}
+
+.panel-head {
+    margin-bottom: 22px;
+}
+
+.panel-head h2 {
+    font-size: 17px;
+    margin-bottom: 4px;
+}
+
+.panel-head p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+input,
+select,
+textarea {
+    background: var(--input-background);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 12px;
+    outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #71809c;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary);
+}
+
+#search {
+    width: 230px;
+}
+
+#filter {
+    min-width: 125px;
+}
+
+/* Individual internship cards */
+
+#list {
+    display: grid;
+    gap: 15px;
+}
+
+.application-card {
+    background: var(--input-background);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    transition: border-color 0.2s;
+}
+
+.application-card:hover {
+    border-color: #465b81;
+}
+
+.application-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    margin-bottom: 18px;
+}
+
+.application-heading h3 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.application-heading p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    flex: 1 1 180px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 5px 11px;
+    border-radius: 20px;
+    background: rgba(124, 156, 255, 0.14);
+    color: #a9bdff;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.application-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+.application-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.application-detail small {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.application-detail span {
+    color: var(--text);
+    font-size: 14px;
+}
+
+.application-details a {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.application-details a:hover {
+    text-decoration: underline;
+}
+
+.application-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.edit-btn,
+.delete-btn {
+    padding: 9px 17px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 650;
+    transition: background 0.2s;
+}
+
+.edit-btn {
+    background: rgba(124, 156, 255, 0.12);
+    color: var(--primary);
+    border: 1px solid rgba(124, 156, 255, 0.3);
+}
+
+.edit-btn:hover {
+    background: rgba(124, 156, 255, 0.23);
+}
+
+.delete-btn {
+    background: rgba(244, 125, 139, 0.08);
+    color: var(--danger);
+    border: 1px solid rgba(244, 125, 139, 0.28);
+}
+
+.delete-btn:hover {
+    background: rgba(244, 125, 139, 0.18);
+}
+
+/* Empty application list */
+
+.empty-state {
+    text-align: center;
+    padding: 32px 16px;
+}
+
+.empty-state h3 {
+    margin-bottom: 6px;
+    font-size: 16px;
+}
+
+.empty-state p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+/* Footer and data controls */
+
+footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 20px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+footer button,
+footer a {
+    background: transparent;
+    color: var(--primary);
+    border: none;
+    padding: 2px;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+footer button:hover,
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Add / Edit modal */
+
+dialog,
+#modal {
+    width: min(470px, calc(100% - 28px));
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid #3b4d70;
+    border-radius: 15px;
+    padding: 24px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.72);
+}
+
+.modal-head {
+    margin-bottom: 20px;
+}
+
+.modal-head h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+#closeBtn {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 24px;
+    padding: 0 6px;
+}
+
+#closeBtn:hover {
+    color: var(--primary);
+}
+
+/* Form fields */
+
+#appForm {
+    display: grid;
+    gap: 14px;
+}
+
+#appForm label {
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+#appForm input,
+#appForm select,
+#appForm textarea {
+    width: 100%;
+}
+
+#appForm textarea {
+    resize: vertical;
+    min-height: 90px;
+}
+
+#appForm .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+#appForm button[type="submit"] {
+    width: 100%;
+    margin-top: 8px;
+    background: var(--primary);
+    color: #0a1327;
+    border: none;
+    border-radius: 9px;
+    padding: 12px;
+    font-weight: 700;
+}
+
+#appForm button[type="submit"]:hover {
+    background: var(--primary-hover);
+}
+
+/* Responsive layout */
+
+@media (max-width: 800px) {
+    .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .panel-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .filters {
+        width: 100%;
+    }
+
+    #search {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 520px) {
+    .shell {
+        padding: 26px 16px;
+    }
+
+    header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    #addBtn {
+        width: 100%;
+    }
+
+    .stats {
+        gap: 10px;
+    }
+
+    .stat,
+    .stat-card {
+        padding: 16px;
+        min-height: 100px;
+    }
+
+    .panel {
+        padding: 16px;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+
+    #search,
+    #filter {
+        width: 100%;
+    }
+
+    .application-card {
+        padding: 16px;
+    }
+
+    .application-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .application-details {
+        grid-template-columns: 1fr;
+    }
+
+    .application-actions {
+        justify-content: stretch;
+    }
+
+    .edit-btn,
+    .delete-btn {
+        flex: 1;
+    }
+
+    #appForm .row {
+        grid-template-columns: 1fr;
+    }
+}
