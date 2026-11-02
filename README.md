@@ -16,5 +16,3 @@ Open `index.html` in a browser, or publish the repository with GitHub Pages (Set
 ## Data privacy
 Data stays in the current browser's local storage; there is no server account or cloud synchronization. Clearing browser data can delete applications. Export backups regularly.
 
-## Course context
-TCSS 490 Artifact 4. Developed individually; the course normally requires teams of 2–3, so the team collaboration requirement is not fulfilled by solo work. User interviews, testing, and handoff must be documented when actually completed.
