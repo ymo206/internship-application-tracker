@@ -1,8 +1,7 @@
 
-/* =========================================
-   Internship Application Tracker
-   TCSS 490 - Artifact 4
-   ========================================= */
+/* ==========================================
+   Internship Tracker - TCSS 490 Artifact 4
+   ========================================== */
 
 :root {
     --background: #0d1322;
@@ -66,7 +65,8 @@ header {
 }
 
 .eyebrow {
-    margin: 0 0 8px;
+    display: block;
+    margin-bottom: 8px;
     color: var(--primary);
     font-size: 11px;
     font-weight: 700;
@@ -87,21 +87,15 @@ p {
     margin-top: 0;
 }
 
-header p,
-.subtitle {
-    color: var(--muted);
-}
-
 header p {
     margin: 6px 0 0;
+    color: var(--muted);
     font-size: 14px;
 }
 
-/* Buttons */
+/* Primary buttons */
 
-.primary,
-#addBtn,
-#saveBtn {
+.primary {
     background: var(--primary);
     color: #0a1327;
     border: 1px solid transparent;
@@ -111,9 +105,7 @@ header p {
     transition: background 0.2s, transform 0.2s;
 }
 
-.primary:hover,
-#addBtn:hover,
-#saveBtn:hover {
+.primary:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
 }
@@ -136,27 +128,30 @@ a:focus-visible {
     margin-bottom: 26px;
 }
 
-.stat,
-.stat-card {
+.stats article {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 22px;
     min-height: 118px;
+    transition: border-color 0.2s;
 }
 
-.stat small,
-.stat-card small,
-.stat-label {
+.stats article:hover {
+    border-color: #465b81;
+}
+
+.stats article span {
     display: block;
     color: var(--muted);
     font-size: 13px;
     margin-bottom: 8px;
 }
 
-.stat strong,
-.stat-card strong,
-.stat-value {
+.stats article strong {
     display: block;
     font-size: 30px;
     font-weight: 750;
@@ -193,6 +188,8 @@ a:focus-visible {
     align-items: center;
 }
 
+/* Inputs */
+
 input,
 select,
 textarea {
@@ -223,12 +220,15 @@ textarea:focus {
     min-width: 125px;
 }
 
-/* Individual internship cards */
+/* Application list */
 
+.list,
 #list {
     display: grid;
     gap: 15px;
 }
+
+/* Internship cards */
 
 .application-card {
     background: var(--input-background);
@@ -275,6 +275,8 @@ textarea:focus {
     font-weight: 650;
 }
 
+/* Application details */
+
 .application-details {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -310,6 +312,8 @@ textarea:focus {
 .application-details a:hover {
     text-decoration: underline;
 }
+
+/* Edit and Delete buttons */
 
 .application-actions {
     display: flex;
@@ -347,7 +351,7 @@ textarea:focus {
     background: rgba(244, 125, 139, 0.18);
 }
 
-/* Empty application list */
+/* Empty state */
 
 .empty-state {
     text-align: center;
@@ -365,7 +369,7 @@ textarea:focus {
     margin-bottom: 0;
 }
 
-/* Footer and data controls */
+/* Footer and import/export */
 
 footer {
     display: flex;
@@ -378,21 +382,27 @@ footer {
 }
 
 footer button,
-footer a {
+footer .import-label {
     background: transparent;
     color: var(--primary);
     border: none;
     padding: 2px;
     font-size: 12px;
     text-decoration: none;
+    cursor: pointer;
 }
 
 footer button:hover,
-footer a:hover {
+footer .import-label:hover {
     text-decoration: underline;
 }
 
-/* Add / Edit modal */
+.import-label:focus-within {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+/* Modal */
 
 dialog,
 #modal {
@@ -432,7 +442,7 @@ dialog::backdrop {
     color: var(--primary);
 }
 
-/* Form fields */
+/* Application form */
 
 #appForm {
     display: grid;
@@ -457,7 +467,7 @@ dialog::backdrop {
     min-height: 90px;
 }
 
-#appForm .row {
+#appForm .two {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
@@ -478,7 +488,7 @@ dialog::backdrop {
     background: var(--primary-hover);
 }
 
-/* Responsive layout */
+/* Tablet */
 
 @media (max-width: 800px) {
     .stats {
@@ -501,6 +511,8 @@ dialog::backdrop {
     }
 }
 
+/* Mobile */
+
 @media (max-width: 520px) {
     .shell {
         padding: 26px 16px;
@@ -519,10 +531,13 @@ dialog::backdrop {
         gap: 10px;
     }
 
-    .stat,
-    .stat-card {
+    .stats article {
         padding: 16px;
         min-height: 100px;
+    }
+
+    .stats article strong {
+        font-size: 26px;
     }
 
     .panel {
@@ -560,7 +575,7 @@ dialog::backdrop {
         flex: 1;
     }
 
-    #appForm .row {
+    #appForm .two {
         grid-template-columns: 1fr;
     }
 }
