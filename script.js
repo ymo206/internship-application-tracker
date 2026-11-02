@@ -1,323 +1,637 @@
 
+"use strict";
+
+// Internship Application Tracker
+// TCSS 490 - Artifact 4
+
 const STORAGE_KEY = "internshipApplications";
 
-let applications = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+const STATUSES = [
+    "Saved",
+    "Applied",
+    "Interviewing",
+    "Offered",
+    "Rejected"
+];
 
+let applications = [];
+
+// Get an HTML element by its ID
+function getElement(id) {
+    return document.getElementById(id);
+}
+
+// Load saved applications
+function loadApplications() {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        const parsed = stored ? JSON.parse(stored) : [];
+
+        applications = Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.error("Unable to load applications:", error);
+        applications = [];
+    }
+}
+
+// Save applications in the browser
 function saveApplications() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+    try {
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(applications)
+        );
+        return true;
+    } catch (error) {
+        console.error("Unable to save applications:", error);
+        alert("Unable to save your data. Check browser storage.");
+        return false;
+    }
 }
 
-function addApplication(company, position, date, deadline, status) {
-    const application = {
-        id: Date.now().toString() + Math.random().toString(36).slice(2),
-        company,
-        position,
-        date,
-        deadline,
-        status
-    };
-
-    applications.push(application);
-    saveApplications();
-    renderApplications();
-}
-
-function deleteApplication(id) {
-    if (!confirm("Are you sure you want to delete this application?")) {
-        return;
+// Generate a unique application ID
+function createId() {
+    if (crypto.randomUUID) {
+        return crypto.randomUUID();
     }
 
-    applications = applications.filter(app => app.id !== id);
-    saveApplications();
-    renderApplications();
+    return Date.now().toString() +
+        Math.random().toString(36).slice(2);
 }
 
-function updateApplication(id, updates) {
-    const application = applications.find(app => app.id === id);
+// Display dates without timezone issues
+function formatDate(dateString) {
+    if (!dateString) return "Not set";
 
-    if (!application) return;
+    const parts = dateString.split("-");
 
-    Object.assign(application, updates);
-    saveApplications();
-    renderApplications();
-}
+    if (parts.length !== 3) return dateString;
 
-function updateStatistics() {
-    const total = applications.length;
-    const applied = applications.filter(app => app.status === "Applied").length;
-    const interviewing = applications.filter(app => app.status === "Interviewing").length;
-    const offered = applications.filter(app => app.status === "Offered").length;
+    const date = new Date(
+        Number(parts[0]),
+        Number(parts[1]) - 1,
+        Number(parts[2])
+    );
 
-    const stats = {
-        "totalApplications": total,
-        "appliedCount": applied,
-        "interviewCount": interviewing,
-        "offerCount": offered
-    };
+    if (Number.isNaN(date.getTime())) {
+        return dateString;
+    }
 
-    Object.entries(stats).forEach(([id, value]) => {
-        const element = document.getElementById(id);
-        if (element) element.textContent = value;
+    return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
     });
 }
 
+// Check how close an application deadline is
+function getDeadlineMessage(deadline) {
+    if (!deadline) return "No deadline set";
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const parts = deadline.split("-");
+
+    const dueDate = new Date(
+        Number(parts[0]),
+        Number(parts[1]) - 1,
+        Number(parts[2])
+    );
+
+    const days = Math.round(
+        (dueDate - today) / 86400000
+    );
+
+    if (days < 0) return "Deadline passed";
+    if (days === 0) return "Due today";
+    if (days === 1) return "Due tomorrow";
+    if (days <= 7) return `Due in ${days} days`;
+
+    return formatDate(deadline);
+}
+
+// Update the dashboard statistics
+function updateStatistics() {
+    const total = applications.length;
+
+    const applied = applications.filter(
+        app => app.status === "Applied"
+    ).length;
+
+    const interviewing = applications.filter(
+        app => app.status === "Interviewing"
+    ).length;
+
+    const offers = applications.filter(
+        app => app.status === "Offered"
+    ).length;
+
+    getElement("total").textContent = total;
+    getElement("applied").textContent = applied;
+    getElement("interviewing").textContent = interviewing;
+    getElement("offers").textContent = offers;
+}
+
+// Create a small labeled detail element
+function createDetail(label, value) {
+    const detail = document.createElement("div");
+    detail.className = "application-detail";
+
+    const labelElement = document.createElement("small");
+    labelElement.textContent = label + ": ";
+
+    const valueElement = document.createElement("span");
+    valueElement.textContent = value;
+
+    detail.append(labelElement, valueElement);
+
+    return detail;
+}
+
+// Create a button
+function createButton(label, className, callback) {
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.textContent = label;
+    button.className = className;
+
+    button.addEventListener("click", callback);
+
+    return button;
+}
+
+// Display all matching applications
 function renderApplications() {
-    const tableBody = document.getElementById("applicationsTable");
-    const applicationList = document.getElementById("applicationList");
+    const container = getElement("list");
+    const searchInput = getElement("search");
+    const statusFilter = getElement("filter");
 
-    const container = tableBody || applicationList;
-
-    if (!container) {
-        updateStatistics();
-        return;
-    }
-
-    const search = (
-        document.getElementById("searchInput")?.value || ""
-    ).toLowerCase();
-
-    const statusFilter =
-        document.getElementById("statusFilter")?.value || "All";
+    const search = searchInput.value.trim().toLowerCase();
+    const selectedStatus = statusFilter.value;
 
     const filtered = applications.filter(app => {
+        const company = String(app.company || "");
+        const position = String(app.position || "");
+
         const matchesSearch =
-            app.company.toLowerCase().includes(search) ||
-            app.position.toLowerCase().includes(search);
+            company.toLowerCase().includes(search) ||
+            position.toLowerCase().includes(search);
 
         const matchesStatus =
-            statusFilter === "All" ||
-            statusFilter === "All Statuses" ||
-            app.status === statusFilter;
+            selectedStatus === "All" ||
+            app.status === selectedStatus;
 
         return matchesSearch && matchesStatus;
     });
 
-    container.innerHTML = "";
+    container.replaceChildren();
 
     if (filtered.length === 0) {
-        const message = document.createElement(
-            tableBody ? "tr" : "div"
-        );
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
 
-        if (tableBody) {
-            const cell = document.createElement("td");
-            cell.colSpan = 6;
-            cell.textContent = "No applications found.";
-            message.appendChild(cell);
+        const heading = document.createElement("h3");
+        const message = document.createElement("p");
+
+        if (applications.length === 0) {
+            heading.textContent = "No applications yet";
+            message.textContent =
+                "Click Add application to start tracking internships.";
         } else {
-            message.textContent = "No applications found.";
+            heading.textContent = "No matching applications";
+            message.textContent =
+                "Try changing your search or status filter.";
         }
 
-        container.appendChild(message);
+        empty.append(heading, message);
+        container.appendChild(empty);
+
         updateStatistics();
         return;
     }
 
+    // Sort by nearest deadline
+    filtered.sort((a, b) => {
+        const dateA = a.deadline || "9999-12-31";
+        const dateB = b.deadline || "9999-12-31";
+
+        return dateA.localeCompare(dateB);
+    });
+
     filtered.forEach(app => {
-        const row = document.createElement(
-            tableBody ? "tr" : "div"
+        const card = document.createElement("article");
+        card.className = "application-card";
+
+        const heading = document.createElement("div");
+        heading.className = "application-heading";
+
+        const company = document.createElement("h3");
+        company.textContent = app.company;
+
+        const position = document.createElement("p");
+        position.textContent = app.position;
+
+        const status = document.createElement("span");
+        status.className = "status-badge";
+        status.textContent = app.status;
+
+        heading.append(company, position, status);
+
+        const details = document.createElement("div");
+        details.className = "application-details";
+
+        details.appendChild(
+            createDetail(
+                "Applied",
+                formatDate(app.date)
+            )
         );
 
-        if (!tableBody) row.className = "application-card";
+        details.appendChild(
+            createDetail(
+                "Deadline",
+                getDeadlineMessage(app.deadline)
+            )
+        );
 
-        const fields = [
-            app.company,
-            app.position,
-            app.date || "Not set",
-            app.deadline || "Not set",
-            app.status
-        ];
-
-        fields.forEach(value => {
-            const cell = document.createElement(
-                tableBody ? "td" : "div"
+        if (app.notes) {
+            details.appendChild(
+                createDetail("Notes", app.notes)
             );
+        }
 
-            cell.textContent = value;
-            row.appendChild(cell);
-        });
+        if (app.url) {
+            try {
+                const parsedUrl = new URL(app.url);
 
-        const actions = document.createElement(
-            tableBody ? "td" : "div"
+                if (
+                    parsedUrl.protocol === "https:" ||
+                    parsedUrl.protocol === "http:"
+                ) {
+                    const link = document.createElement("a");
+                    link.href = parsedUrl.href;
+                    link.textContent = "View application";
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+
+                    details.appendChild(link);
+                }
+            } catch (error) {
+                console.warn("Invalid application URL");
+            }
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "application-actions";
+
+        const editButton = createButton(
+            "Edit",
+            "edit-btn",
+            () => openEditForm(app.id)
         );
 
-        const editButton = document.createElement("button");
-        editButton.textContent = "Edit";
-        editButton.className = "edit-btn";
-        editButton.addEventListener("click", () => editApplication(app.id));
-
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "Delete";
-        deleteButton.className = "delete-btn";
-        deleteButton.addEventListener("click", () => deleteApplication(app.id));
+        const deleteButton = createButton(
+            "Delete",
+            "delete-btn",
+            () => deleteApplication(app.id)
+        );
 
         actions.append(editButton, deleteButton);
-        row.appendChild(actions);
-        container.appendChild(row);
+
+        card.append(heading, details, actions);
+        container.appendChild(card);
     });
 
     updateStatistics();
 }
 
-function editApplication(id) {
-    const app = applications.find(item => item.id === id);
+// Open the form for a new application
+function openAddForm() {
+    const form = getElement("appForm");
+
+    form.reset();
+
+    getElement("editId").value = "";
+    getElement("formTitle").textContent = "Add application";
+
+    getElement("status").value = "Applied";
+
+    getElement("modal").showModal();
+    getElement("company").focus();
+}
+
+// Open the form to edit an existing application
+function openEditForm(id) {
+    const app = applications.find(
+        item => String(item.id) === String(id)
+    );
+
     if (!app) return;
 
-    const company = prompt("Company name:", app.company);
-    if (company === null) return;
+    getElement("editId").value = app.id;
+    getElement("company").value = app.company || "";
+    getElement("position").value = app.position || "";
+    getElement("status").value = app.status || "Applied";
+    getElement("date").value = app.date || "";
+    getElement("deadline").value = app.deadline || "";
+    getElement("url").value = app.url || "";
+    getElement("notes").value = app.notes || "";
 
-    const position = prompt("Position:", app.position);
-    if (position === null) return;
+    getElement("formTitle").textContent = "Edit application";
 
-    const status = prompt(
-        "Status (Applied, Interviewing, Offered, Rejected):",
-        app.status
-    );
+    getElement("modal").showModal();
+    getElement("company").focus();
+}
 
-    if (status === null) return;
+// Read the application form
+function readFormData() {
+    return {
+        company: getElement("company").value.trim(),
+        position: getElement("position").value.trim(),
+        status: getElement("status").value,
+        date: getElement("date").value,
+        deadline: getElement("deadline").value,
+        url: getElement("url").value.trim(),
+        notes: getElement("notes").value.trim()
+    };
+}
 
-    const validStatuses = [
-        "Applied",
-        "Interviewing",
-        "Offered",
-        "Rejected"
-    ];
+// Add or update an application
+function handleFormSubmit(event) {
+    event.preventDefault();
 
-    const normalizedStatus = validStatuses.find(
-        item => item.toLowerCase() === status.trim().toLowerCase()
-    );
+    const data = readFormData();
+    const editId = getElement("editId").value;
 
-    if (!company.trim() || !position.trim() || !normalizedStatus) {
-        alert("Enter a company, position, and valid status.");
+    if (!data.company || !data.position) {
+        alert("Please enter a company and position.");
         return;
     }
 
-    updateApplication(id, {
-        company: company.trim(),
-        position: position.trim(),
-        status: normalizedStatus
-    });
+    if (!STATUSES.includes(data.status)) {
+        alert("Please select a valid status.");
+        return;
+    }
+
+    if (
+        data.deadline &&
+        data.date &&
+        data.deadline < data.date
+    ) {
+        if (!confirm(
+            "The deadline is before the application date. Save anyway?"
+        )) {
+            return;
+        }
+    }
+
+    const previous = [...applications];
+
+    if (editId) {
+        const index = applications.findIndex(
+            app => String(app.id) === editId
+        );
+
+        if (index === -1) {
+            alert("Application not found.");
+            return;
+        }
+
+        applications[index] = {
+            ...applications[index],
+            ...data
+        };
+    } else {
+        applications.push({
+            id: createId(),
+            ...data,
+            createdAt: new Date().toISOString()
+        });
+    }
+
+    if (!saveApplications()) {
+        applications = previous;
+        return;
+    }
+
+    getElement("modal").close();
+    getElement("appForm").reset();
+
+    renderApplications();
 }
 
+// Delete an application
+function deleteApplication(id) {
+    const app = applications.find(
+        item => String(item.id) === String(id)
+    );
+
+    if (!app) return;
+
+    const confirmed = confirm(
+        `Delete the application for ${app.company}?`
+    );
+
+    if (!confirmed) return;
+
+    const previous = [...applications];
+
+    applications = applications.filter(
+        item => String(item.id) !== String(id)
+    );
+
+    if (!saveApplications()) {
+        applications = previous;
+        return;
+    }
+
+    renderApplications();
+}
+
+// Export all applications as JSON
 function exportApplications() {
-    const data = JSON.stringify(applications, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
+    const json = JSON.stringify(applications, null, 2);
+
+    const blob = new Blob([json], {
+        type: "application/json"
+    });
+
     const url = URL.createObjectURL(blob);
 
     const link = document.createElement("a");
     link.href = url;
     link.download = "internship-applications.json";
+
+    document.body.appendChild(link);
     link.click();
+    link.remove();
 
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function importApplications(file) {
-    const reader = new FileReader();
-
-    reader.onload = function () {
-        try {
-            const imported = JSON.parse(reader.result);
-
-            if (!Array.isArray(imported)) {
-                throw new Error("Invalid file format");
-            }
-
-            const validStatuses = [
-                "Applied",
-                "Interviewing",
-                "Offered",
-                "Rejected"
-            ];
-
-            const cleaned = imported.map(item => {
-                if (
-                    !item ||
-                    typeof item.company !== "string" ||
-                    typeof item.position !== "string" ||
-                    !validStatuses.includes(item.status)
-                ) {
-                    throw new Error("Invalid application data");
-                }
-
-                return {
-                    id: crypto.randomUUID(),
-                    company: item.company,
-                    position: item.position,
-                    date: typeof item.date === "string" ? item.date : "",
-                    deadline: typeof item.deadline === "string" ? item.deadline : "",
-                    status: item.status
-                };
-            });
-
-            applications = cleaned;
-            saveApplications();
-            renderApplications();
-            alert("Applications imported successfully!");
-        } catch (error) {
-            alert("Unable to import this JSON file.");
-        }
-    };
-
-    reader.readAsText(file);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const form =
-        document.getElementById("applicationForm") ||
-        document.getElementById("internshipForm");
-
-    if (form) {
-        form.addEventListener("submit", event => {
-            event.preventDefault();
-
-            const company = document.getElementById("company")?.value.trim();
-            const position = document.getElementById("position")?.value.trim();
-
-            const date =
-                document.getElementById("applicationDate")?.value ||
-                document.getElementById("date")?.value ||
-                "";
-
-            const deadline =
-                document.getElementById("deadline")?.value || "";
-
-            const status =
-                document.getElementById("status")?.value || "Applied";
-
-            if (!company || !position) {
-                alert("Please enter a company and position.");
-                return;
-            }
-
-            addApplication(company, position, date, deadline, status);
-            form.reset();
-        });
+// Validate imported applications
+function validateImportedApplications(data) {
+    if (!Array.isArray(data)) {
+        throw new Error("The JSON file must contain an array.");
     }
 
-    document.getElementById("searchInput")?.addEventListener(
+    return data.map((item, index) => {
+        if (
+            !item ||
+            typeof item !== "object" ||
+            typeof item.company !== "string" ||
+            typeof item.position !== "string" ||
+            !item.company.trim() ||
+            !item.position.trim()
+        ) {
+            throw new Error(
+                `Invalid application at position ${index + 1}.`
+            );
+        }
+
+        const status = STATUSES.includes(item.status)
+            ? item.status
+            : "Saved";
+
+        return {
+            id: createId(),
+            company: item.company.trim().slice(0, 100),
+            position: item.position.trim().slice(0, 120),
+            status,
+            date: typeof item.date === "string"
+                ? item.date
+                : "",
+            deadline: typeof item.deadline === "string"
+                ? item.deadline
+                : "",
+            url: typeof item.url === "string"
+                ? item.url
+                : "",
+            notes: typeof item.notes === "string"
+                ? item.notes.slice(0, 1500)
+                : "",
+            createdAt: typeof item.createdAt === "string"
+                ? item.createdAt
+                : new Date().toISOString()
+        };
+    });
+}
+
+// Import applications from a JSON file
+async function importApplications(file) {
+    if (!file) return;
+
+    try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+
+        const imported = validateImportedApplications(parsed);
+
+        const confirmed = confirm(
+            `Import ${imported.length} applications? ` +
+            "This will replace your current applications. " +
+            "Export a backup first if you want to keep them."
+        );
+
+        if (!confirmed) return;
+
+        const previous = [...applications];
+
+        applications = imported;
+
+        if (!saveApplications()) {
+            applications = previous;
+            return;
+        }
+
+        renderApplications();
+
+        alert("Applications imported successfully!");
+    } catch (error) {
+        console.error("Import failed:", error);
+
+        alert(
+            "Unable to import the file: " + error.message
+        );
+    }
+}
+
+// Connect the interface to JavaScript
+function initializeApp() {
+    loadApplications();
+
+    // Add application button
+    getElement("addBtn").addEventListener(
+        "click",
+        openAddForm
+    );
+
+    // Close form button
+    getElement("closeBtn").addEventListener(
+        "click",
+        () => getElement("modal").close()
+    );
+
+    // Close dialog when clicking its backdrop
+    getElement("modal").addEventListener(
+        "click",
+        event => {
+            if (event.target === getElement("modal")) {
+                getElement("modal").close();
+            }
+        }
+    );
+
+    // Form submission
+    getElement("appForm").addEventListener(
+        "submit",
+        handleFormSubmit
+    );
+
+    // Search applications
+    getElement("search").addEventListener(
         "input",
         renderApplications
     );
 
-    document.getElementById("statusFilter")?.addEventListener(
+    // Filter applications by status
+    getElement("filter").addEventListener(
         "change",
         renderApplications
     );
 
-    document.getElementById("exportButton")?.addEventListener(
+    // Export applications
+    getElement("exportBtn").addEventListener(
         "click",
         exportApplications
     );
 
-    document.getElementById("importFile")?.addEventListener(
+    // Import applications
+    getElement("importFile").addEventListener(
         "change",
-        event => {
+        async event => {
             const file = event.target.files[0];
-            if (file) importApplications(file);
+
+            if (file) {
+                await importApplications(file);
+            }
+
             event.target.value = "";
         }
     );
 
+    // Initial dashboard display
     renderApplications();
-});
+}
+
+// Start once the HTML has loaded
+if (document.readyState === "loading") {
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeApp
+    );
+} else {
+    initializeApp();
+}
